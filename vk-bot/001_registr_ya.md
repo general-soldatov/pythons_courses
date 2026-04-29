@@ -37,3 +37,14 @@ echo $SERVICE_ACCOUNT_ID
 echo "export SERVICE_ACCOUNT_ID=<идентификатор_сервисного_аккаунта>" >> ~/ ~/.zshrc && . ~/ ~/.zshrc
 echo $SERVICE_ACCOUNT_ID
 ```
+назначим роль аккаунту редактора `editor`. Сохраним идентификатор папки, с которой мы работаем в переменные окружения:
+```
+echo "export FOLDER_ID=$(yc config get folder-id)" >> ~/.bashrc && . ~/.bashrc 
+echo $FOLDER_ID
+```
+А теперь с помощью консольной утилиты назначим роль
+```bash
+yc resource-manager folder add-access-binding $FOLDER_ID \
+  --subject serviceAccount:$SERVICE_ACCOUNT_ID \
+  --role editor
+```
