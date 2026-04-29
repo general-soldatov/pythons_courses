@@ -142,3 +142,76 @@ yc serverless function version create \
   --environment SECRET_KEY=$SECRET_KEY \
   --environment BUCKET_NAME=$BUCKET_NAME
 ```
+# содание маршрутизатора
+создадим спецификацию `hello-world.yaml`:
+```yaml
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Test API
+paths:
+  /hello:
+    get:
+      summary: Say hello
+      operationId: hello
+      parameters:
+        - name: user
+          in: query
+          description: User name to appear in greetings
+          required: false
+          schema:
+            type: string
+            default: 'world'
+      responses:
+        '200':
+          description: Greeting
+          content:
+            'text/plain':
+              schema:
+                type: "string"
+      x-yc-apigateway-integration:
+        type: dummy
+        http_code: 200
+        http_headers:
+          'Content-Type': "text/plain"
+        content:
+          'text/plain': "Hello, {user}!\n"
+```
+теперь мы его можем развернуть на облаке:
+```bash
+yc serverless api-gateway create \
+  --name hello-world \
+  --spec=hello-world.yaml \
+  --description "hello world"
+```
+при успешном создании получим значение `domain`:
+```bash
+yc serverless api-gateway list
+
+yc serverless api-gateway get --name hello-world
+```
+проверить работоспособность сможем через адресную строку браузера:
+```
+https://<идентификатор API Gateway>.apigw.yandexcloud.net/hello
+```
+После проверки работоспособности можем настроить теперь взаимодействие с функцией. Создадим спецификацию
+```yaml
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Updated API
+paths:
+  /results:
+    get:
+      x-yc-apigateway-integration:
+        type: cloud-functions
+        function_id: <идентификатор функции>
+        service_account_id: <идентификатор сервисного аккаунта>
+      operationId: function-for-user-requests
+```
+выгрузим на облако спецификацию
+```bash
+yc serverless api-gateway update \
+  --name hello-world \
+  --spec=hello-world.yaml
+```
