@@ -116,3 +116,29 @@ yc serverless function allow-unauthenticated-invoke my-first-function
 yc serverless function get my-first-function
 ```
 нам интересен параметр `http_invoke_url`, который можно вставить в строку браузера и насладиться созданным первым сайтом))
+# набор файлов
+чаще программы состоят из нескольких файлов, поэтому для того, чтобы залить код в функцию, можем создать `zip` архив и загрузить весь код в облако:
+```bash
+yc serverless function version create \
+  --function-name my-first-function \
+  --memory 256m \
+  --execution-timeout 5s \
+  --runtime python312 \
+  --entrypoint index.handler \
+  --service-account-id $SERVICE_ACCOUNT_ID \
+  --source-path my-first-function.zip
+```
+чтобы использовать переменные окружения можем дополнить функцию:
+```bash
+yc serverless function version create \
+  --function-name my-first-function \
+  --memory 256m \
+  --execution-timeout 5s \
+  --runtime python312 \
+  --entrypoint index.handler \
+  --service-account-id $SERVICE_ACCOUNT_ID \
+  --source-version-id <ID> \
+  --environment ACCESS_KEY=$ACCESS_KEY \
+  --environment SECRET_KEY=$SECRET_KEY \
+  --environment BUCKET_NAME=$BUCKET_NAME
+```
